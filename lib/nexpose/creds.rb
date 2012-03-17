@@ -10,9 +10,9 @@ module Nexpose
       # Designates if this object contains user defined credentials or a security blob
       attr_reader :isblob
       # The service for these credentials. Can be All.
-      attr_reader :service
+      attr_accessor :service
       # The host for these credentials. Can be Any.
-      attr_reader :host
+      attr_accessor :host
       # The port on which to use these credentials.
       attr_reader :port
       # The user id or username
@@ -23,14 +23,14 @@ module Nexpose
       attr_reader :realm
       # When using httpheaders, this represents the set of headers to pass
       # with the authentication request.
-      attr_reader :headers
+      attr_accessor :headers
 
       def initialize(isblob = false)
          @isblob = isblob
       end
 
       # Sets the credentials information for this object.
-      def setCredentials(service, host, port, userid, password, realm)
+      def set_credentials(service, host, port, userid, password, realm)
          @isblob = false
          @securityblob = nil
          @service = service
@@ -42,24 +42,11 @@ module Nexpose
       end
 
       # TODO: add description
-      def setService(service)
-         @service = service
-      end
-
-      def setHost(host)
-         @host = host
-      end
-
-      # TODO: add description
-      def setBlob(securityblob)
+      def set_blob(securityblob)
          @isblob = true
          @securityblob = securityblob
       end
 
-      # Add Headers to credentials for httpheaders.
-      def setHeaders(headers)
-         @headers = headers
-      end
 
       def to_xml
          xml = ''
