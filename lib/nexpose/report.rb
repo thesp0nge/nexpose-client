@@ -216,7 +216,7 @@ module Nexpose
 
 		end
 
-		def addFilter(filter_type, id)
+		def add_filter(filter_type, id)
 
 			# filter_type can be site|group|device|scan
 			# id is the ID number. For scan, you can use 'last' for the most recently run scan
@@ -281,11 +281,11 @@ module Nexpose
 		# The ID for this report definition
 		attr_reader :config_id
 		# A unique name for this report definition
-		attr_reader :name
+		attr_accessor :name
 		# The template ID used for this report definition
-		attr_reader :template_id
+		attr_accessor :template_id
 		# html, db, txt, xml, raw-xml, csv, pdf
-		attr_reader :format
+		attr_accessor :format
 		# XXX new
 		attr_reader :timezone
 		# XXX new
@@ -294,27 +294,27 @@ module Nexpose
 		attr_reader :filters
 		# Automatically generate a new report at the conclusion of a scan
 		# 1 or 0
-		attr_reader :generate_after_scan
+		attr_accessor :generate_after_scan
 		# Schedule to generate reports
 		# ReportSchedule Object
 		attr_reader :schedule
 		# Store the reports on the server
 		# 1 or 0
-		attr_reader :storeOnServer
+		attr_accessor :store_on_server
 		# Location to store the report on the server
 		attr_reader :store_location
 		# Form to send the report via email
 		# "file", "zip", "url", or NULL (don’t send email)
-		attr_reader :email_As
+		attr_accessor :email_As
 		# Send the Email to all Authorized Users
 		# boolean - Send the Email to all Authorized Users
 		attr_reader :email_to_all
 		# Array containing the email addresses of the recipients
 		attr_reader :email_recipients
 		# IP Address or Hostname of SMTP Relay Server
-		attr_reader :smtp_relay_server
+		attr_accessor :smtp_relay_server
 		# Sets the FROM field of the Email
-		attr_reader :sender
+		attr_accessor :sender
 		# TODO
 		attr_reader :db_export
 		# TODO
@@ -351,14 +351,14 @@ module Nexpose
 
 		# === Description
 		# Generate a new report on this report definition. Returns the new report ID.
-		def generateReport(debug = false)
-			return generateReport(@connection, @config_id, debug)
+		def generate_report(debug = false)
+			return generate_report(@connection, @config_id, debug)
 		end
 
 		# === Description
 		# Save the report definition to the NSC.
 		# Returns the config-id.
-		def saveReport()
+		def save_report()
 			r = @connection.execute('<ReportSaveRequest session-id="' + @connection.session_id.to_s + '">' + getXML().to_s + ' </ReportSaveRequest>')
 			if (r.success)
 				@config_id = r.attributes['reportcfg-id']
@@ -369,24 +369,24 @@ module Nexpose
 
 		# === Description
 		# Adds a new filter to the report config
-		def addFilter(filter_type, id)
+		def add_filter(filter_type, id)
 			filter = ReportFilter.new(filter_type, id)
 			@filters.push(filter)
 		end
 
 		# === Description
 		# Adds a new email recipient
-		def addEmailRecipient(recipient)
+		def add_email_recipient(recipient)
 			@email_recipients.push(recipient)
 		end
 
 		# === Description
 		# Sets the schedule for this report config
-		def setSchedule(schedule)
+		def set_schedule(schedule)
 			@schedule = schedule
 		end
 
-		def getXML()
+		def get_XML()
 
 			xml = '<ReportConfig id="' + @config_id.to_s + '" name="' + @name.to_s + '" template-id="' + @template_id.to_s + '" format="' + @format.to_s + '">'
 
@@ -408,7 +408,7 @@ module Nexpose
 
 			xml += ' <Delivery>'
 
-			xml += ' <Storage storeOnServer="' + @storeOnServer.to_s + '">'
+			xml += ' <Storage storeOnServer="' + @store_on_server.to_s + '">'
 
 			if (@store_location and @store_location.length > 0)
 				xml += ' <location>' + @store_location.to_s + '</location>'
@@ -424,37 +424,6 @@ module Nexpose
 			return xml
 		end
 
-		def set_name(name)
-			@name = name
-		end
-
-		def set_template_id(template_id)
-			@template_id = template_id
-		end
-
-		def set_format(format)
-			@format = format
-		end
-
-		def set_email_As(email_As)
-			@email_As = email_As
-		end
-
-		def set_storeOnServer(storeOnServer)
-			@storeOnServer = storeOnServer
-		end
-
-		def set_smtp_relay_server(smtp_relay_server)
-			@smtp_relay_server = smtp_relay_server
-		end
-
-		def set_sender(sender)
-			@sender = sender
-		end
-
-		def set_generate_after_scan(generate_after_scan)
-			@generate_after_scan = generate_after_scan
-		end
 	end
 
 	# === Description
