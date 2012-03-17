@@ -208,9 +208,9 @@ module Nexpose
 	#
 	class ScanConfig
 		# A unique ID for this scan configuration
-		attr_reader :configID
+		attr_accessor :configID
 		# The name of the scan template
-		attr_reader :name
+		attr_accessor :name
 		# The ID of the scan template used full-audit, exhaustive-audit, web-audit, dos-audit, internet-audit, network-audit
 		attr_reader :templateID
 		# The configuration version (default is 2)
@@ -232,21 +232,13 @@ module Nexpose
 		end
 
 		# Adds a new Schedule for this ScanConfig
-		def addSchedule(schedule)
+		def add_schedule(schedule)
 			@schedules.push(schedule)
 		end
 
 		# Adds a new ScanTrigger to the scanTriggers array
-		def addScanTrigger(scanTrigger)
+		def add_scan_trigger(scanTrigger)
 			@scanTriggers.push(scanTrigger)
-		end
-
-		def _set_configID(configID)
-			@configID = configID
-		end
-
-		def _set_name(name)
-			@name = name
 		end
 
 	end
