@@ -18,8 +18,8 @@ module Nexpose
     def find_site_by_name(name)
       r = execute(make_xml('SiteListingRequest', {}))
 
+      res = []
       if (r.success)
-        res = []
         r.res.elements.each("//SiteSummary") do |site|
           if (site.attributes['name'] == name) 
             res << {
@@ -30,10 +30,8 @@ module Nexpose
             }
           end
         end
-        res
-      else
-        false
       end
+      res
     end
 
 		#
@@ -181,9 +179,9 @@ module Nexpose
 	#   site.setSiteConfig("New Site", "New Site Created in the API")
 	#
 	#   # Add the hosts
-	#   site.site_config.addHost(HostName.new("localhost"))
-	#   site.site_config.addHost(IPRange.new("192.168.7.1","192.168.7.255"))
-	#   site.site_config.addHost(IPRange.new("10.1.20.30"))
+	#   site.site_config.add_host(HostName.new("localhost"))
+	#   site.site_config.add_host(IPRange.new("192.168.7.1","192.168.7.255"))
+	#   site.site_config.add_host(IPRange.new("10.1.20.30"))
 	#
 	#   status = site.saveSite()
 	#-------------------------------------------------------------------------------------------------------------------
@@ -224,7 +222,7 @@ module Nexpose
 				# Create new SiteConfig object
 				@site_config = SiteConfig.new()
 				# Populate SiteConfig Obect with Data from the NSC
-				@site_config.getSiteConfig(@connection, @site_id)
+				@site_config.get_site_config(@connection, @site_id)
 				@site_summary = SiteSummary.new(@site_id, @site_config.site_name, @site_config.description, @site_config.riskfactor)
 				@site_scan_history = SiteScanHistory.new(@connection, @site_id)
 				@site_device_listing = SiteDeviceListing.new(@connection, @site_id)
@@ -242,26 +240,26 @@ module Nexpose
 		end
 
 		# Creates a new site summary
-		def setSiteSummary(site_name, description, riskfactor = 1)
+		def set_site_summary(site_name, description, riskfactor = 1)
 			@site_summary = SiteSummary.new(-1, site_name, description, riskfactor)
 
 		end
 
 		# Creates a new site configuration
-		def setSiteConfig(site_name, description, riskfactor = 1)
-			setSiteSummary(site_name, description, riskfactor)
+		def set_site_config(site_name, description, riskfactor = 1)
+			set_site_summary(site_name, description, riskfactor)
 			@site_config = SiteConfig.new()
-			@site_config._set_site_id(-1)
-			@site_config._set_site_name(site_name)
-			@site_config._set_description(description)
-			@site_config._set_riskfactor(riskfactor)
-			@site_config._set_scanConfig(ScanConfig.new(-1, "tmp", "full-audit"))
-			@site_config._set_connection(@connection)
+			@site_config.site_id=-1
+			@site_config.site_name=site_name
+			@site_config.description=description
+			@site_config.riskfactor=riskfactor
+			@site_config.scan_config=ScanConfig.new(-1, "tmp", "full-audit")
+			@site_config.connection=@connection
 
 		end
 
 		# Initiates a scan of this site. If successful returns scan_id and engine_id in an associative array. Returns false if scan is unsuccessful.
-		def scanSite()
+		def scan()
 			r = @connection.execute('<SiteScanRequest session-id="' + "#{@connection.session_id}" + '" site-id="' + "#{@site_id}" + '"/>')
 			if (r.success)
 				res = {}
@@ -276,33 +274,33 @@ module Nexpose
 		end
 
 		# Saves this site in the NSC
-		def saveSite()
+		def save()
 			r = @connection.execute('<SiteSaveRequest session-id="' + @connection.session_id + '">' + getSiteXML() + ' </SiteSaveRequest>')
 			if (r.success)
 				@site_id = r.attributes['site-id']
-				@site_config._set_site_id(@site_id)
-				@site_config.scanConfig._set_configID(@site_id)
-				@site_config.scanConfig._set_name(@site_id)
+				@site_config.site_id=@site_id
+				@site_config.scan_config._set_configID(@site_id)
+				@site_config.scan_config._set_name(@site_id)
 				return true
 			else
 				return false
 			end
 		end
 
-		def deleteSite()
+		def delete()
 			r = @connection.execute('<SiteDeleteRequest session-id="' + @connection.session_id.to_s + '" site-id="' + @site_id + '"/>')
 			r.success
 		end
 
 
-		def printSite()
+		def print()
 			puts "Site ID: " + @site_summary.id
 			puts "Site Name: " + @site_summary.site_name
 			puts "Site Description: " + @site_summary.description
 			puts "Site Risk Factor: " + @site_summary.riskfactor
 		end
 
-		def getSiteXML()
+		def get_XML()
 
 			xml = '<Site id="' + "#{@site_config.site_id}" + '" name="' + "#{@site_config.site_name}" + '" description="' + "#{@site_config.description}" + '" riskfactor="' + "#{@site_config.riskfactor}" + '">'
 
@@ -324,16 +322,16 @@ module Nexpose
 			end
 			xml << ' </Alerting>'
 
-			xml << ' <ScanConfig configID="' + "#{@site_config.scanConfig.configID}" + '" name="' + "#{@site_config.scanConfig.name}" + '" templateID="' + "#{@site_config.scanConfig.templateID}" + '" configVersion="' + "#{@site_config.scanConfig.configVersion}" + '">'
+			xml << ' <ScanConfig configID="' + "#{@site_config.scan_config.configID}" + '" name="' + "#{@site_config.scan_config.name}" + '" templateID="' + "#{@site_config.scan_config.templateID}" + '" configVersion="' + "#{@site_config.scan_config.configVersion}" + '">'
 
 			xml << ' <Schedules>'
-			@site_config.scanConfig.schedules.each do |s|
+			@site_config.scan_config.schedules.each do |s|
 				xml << ' <Schedule enabled="' + s.enabled + '" type="' + s.type + '" interval="' + s.interval + '" start="' + s.start + '"/>'
 			end
 			xml << ' </Schedules>'
 
 			xml << ' <ScanTriggers>'
-			@site_config.scanConfig.scanTriggers.each do |s|
+			@site_config.scan_config.scanTriggers.each do |s|
 
 				if (s.class.to_s == "Nexpose::AutoUpdate")
 					xml << ' <autoUpdate enabled="' + s.enabled + '" incremental="' + s.incremental + '"/>'
@@ -454,13 +452,13 @@ module Nexpose
 		# The NSC Connection associated with this object
 		attr_reader :connection
 		# The Site ID
-		attr_reader :site_id
+		attr_accessor :site_id
 		# The Site Name
-		attr_reader :site_name
+		attr_accessor :site_name
 		# A Description of the Site
-		attr_reader :description
+		attr_accessor :description
 		# User assigned risk multiplier
-		attr_reader :riskfactor
+		attr_accessor :riskfactor
 		# Array containing ((IPRange|HostName)*)
 		attr_reader :hosts
 		# Array containing (AdminCredentials*)
@@ -468,7 +466,7 @@ module Nexpose
 		# Array containing ((SmtpAlera|SnmpAlert|SyslogAlert)*)
 		attr_reader :alerts
 		# ScanConfig object which holds Schedule and ScanTrigger Objects
-		attr_reader :scanConfig
+		attr_accessor :scan_config
 
 		def initialize()
 			@xml_tag_stack = Array.new()
@@ -479,22 +477,22 @@ module Nexpose
 		end
 
 		# Adds a new host to the hosts array
-		def addHost(host)
+		def add_host(host)
 			@hosts.push(host)
 		end
 
 		# Adds a new alert to the alerts array
-		def addAlert(alert)
+		def add_alert(alert)
 			@alerts.push(alert)
 		end
 
 		# Adds a new set of credentials to the credentials array
-		def addCredentials(credential)
+		def add_credentials(credential)
 			@credentials.push(credential)
 		end
 
 		# TODO
-		def getSiteConfig(connection, site_id)
+		def get_site_config(connection, site_id)
 			@connection = connection
 			@site_id = site_id
 
@@ -502,29 +500,7 @@ module Nexpose
 			parse(r.res)
 		end
 
-		def _set_site_id(site_id)
-			@site_id = site_id
-		end
 
-		def _set_site_name(site_name)
-			@site_name = site_name
-		end
-
-		def _set_description(description)
-			@description = description
-		end
-
-		def _set_riskfactor(riskfactor)
-			@riskfactor = riskfactor
-		end
-
-		def _set_scanConfig(scanConfig)
-			@scanConfig = scanConfig
-		end
-
-		def _set_connection(connection)
-			@connection = connection
-		end
 
 
 		def parse(response)
@@ -537,13 +513,13 @@ module Nexpose
 					@hosts.push(IPRange.new(r.attributes['from'], r.attributes['to']))
 				end
 				s.elements.each('ScanConfig') do |c|
-					@scanConfig = ScanConfig.new(c.attributes['configID'],
+					@scan_config = ScanConfig.new(c.attributes['configID'],
 												 c.attributes['name'],
 												 c.attributes['templateID'],
 												 c.attributes['configVersion'])
 					c.elements.each('Schedules/Schedule') do |schedule|
 						schedule = ScanSchedule.new(schedule.attributes["type"], schedule.attributes["interval"], schedule.attributes["start"], schedule.attributes["enabled"])
-						@scanConfig.addSchedule(schedule)
+						@scan_config.addSchedule(schedule)
 					end
 				end
 
