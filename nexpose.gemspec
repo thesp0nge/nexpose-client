@@ -4,6 +4,7 @@ APP_NAME = "nexpose"
 # VERSION = "0.0.9"
 REVISION = "12878"
 
+$:.push File.expand_path("../lib", __FILE__)
 require 'nexpose/version'
 Gem::Specification.new do |s|
 	s.name                  = APP_NAME
