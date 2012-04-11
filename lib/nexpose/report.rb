@@ -226,7 +226,6 @@ module Nexpose
 		end
 
 		def generate()
-      puts "SOME DEBUG HERE"
 			request_xml = '<ReportAdhocGenerateRequest session-id="' + @connection.session_id + '">'
 			request_xml += '<AdhocReportConfig template-id="' + @template_id + '" format="' + @format + '">'
 			request_xml += '<Filters>'
@@ -241,7 +240,6 @@ module Nexpose
 			ad_hoc_request.execute()
 
 			content_type_response = ad_hoc_request.raw_response.header['Content-Type']
-      puts "RESPONSE IS #{content_type_response}"
 			if content_type_response =~ /multipart\/mixed;\s*boundary=([^\s]+)/
 				# NeXpose sends an incorrect boundary format which breaks parsing
 				# Eg: boundary=XXX; charset=XXX
@@ -251,11 +249,9 @@ module Nexpose
 
 				data = "Content-Type: " + content_type_response + "\r\n\r\n" + ad_hoc_request.raw_response_data
 				doc = Rex::MIME::Message.new data
-        puts "AIEE #{@format}"
         doc.parts.each do |part|
           if /.*base64.*/ =~ part.header.to_s
             if (@format == "text") or (@format == "pdf") or (@format == "csv")
-              puts part.content
               return Base64.decode64(part.content)
               #return part.content.unpack("m*")[0]
             else
