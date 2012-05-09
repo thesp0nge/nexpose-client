@@ -1,5 +1,5 @@
 module Nexpose
-  module NexposeAPI
-    VERSION = "0.0.10"
-  end
+  APP_NAME = "nexpose"
+  VERSION = "0.0.94"
+  REVISION = "12878"
 end
